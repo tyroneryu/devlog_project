@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taeyun Ryu | Event-Driven Engineering</title>
+
+  <!-- Cyberpunk/Tech Favicon (SVG Data URI) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23050505'/%3E%3Cpath d='M32 12L49.3 22V42L32 52L14.7 42V22L32 12Z' stroke='url(%23grad)' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='14.7' y1='12' x2='49.3' y2='52' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%2322d3ee'/%3E%3Cstop offset='1' stop-color='%23c084fc'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E" />
+
+  <!-- Theme Colors for Mobile Browsers -->
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Socket.IO Client (Global Fallback) -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            'apple-gray': '#1d1d1f',
+            'apple-dark': '#161617',
+          },
+          animation: {
+            'fade-in': 'fadeIn 1s ease-out forwards',
+            'slide-up': 'slideUp 0.8s ease-out forwards',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(20px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' },
+            }
+          },
+          typography: (theme) => ({
+            DEFAULT: {
+              css: {
+                color: theme('colors.neutral.400'),
+                strong: { color: theme('colors.white') },
+                h1: { color: theme('colors.white') },
+                h2: { color: theme('colors.white') },
+                h3: { color: theme('colors.white') },
+                h4: { color: theme('colors.white') },
+                blockquote: { color: theme('colors.neutral.400'), borderLeftColor: theme('colors.blue.500') },
+                code: { color: theme('colors.blue.300') },
+              },
+            },
+          }),
+        },
+      },
+    }
+  </script>
+  <style>
+    /* Custom scrollbar for Webkit */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #000;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    body {
+      background-color: #000;
+      color: #fff;
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@^19.2.3",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "react/": "https://esm.sh/react@^19.2.3/",
+        "react-router-dom": "https://esm.sh/react-router-dom@^7.12.0",
+        "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+        "framer-motion": "https://esm.sh/framer-motion@^12.24.10",
+        "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+        "react-markdown": "https://esm.sh/react-markdown@^10.1.0",
+        "express": "https://esm.sh/express@^5.2.1",
+        "cors": "https://esm.sh/cors@^2.8.5",
+        "fs/": "https://esm.sh/fs@^0.0.1-security/",
+        "path": "https://esm.sh/path@^0.12.7",
+        "url": "https://esm.sh/url@^0.11.4",
+        "dotenv": "https://esm.sh/dotenv@^17.2.3",
+        "module": "https://esm.sh/module@^2.0.0",
+        "helmet": "https://esm.sh/helmet@^8.1.0",
+        "express-rate-limit": "https://esm.sh/express-rate-limit@^8.2.1",
+        "xss": "https://esm.sh/xss@^1.0.15",
+        "jsonwebtoken": "https://esm.sh/jsonwebtoken@^9.0.3",
+        "http": "https://esm.sh/http@^0.0.1-security",
+        "socket.io": "https://esm.sh/socket.io@^4.8.3",
+        "vite": "https://esm.sh/vite@^7.3.1",
+        "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+        "socket.io-client": "https://esm.sh/socket.io-client@^4.8.3"
+      }
+    }
+  </script>
+</head>
+<body class="bg-black text-white antialiased selection:bg-white selection:text-black">
+<div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

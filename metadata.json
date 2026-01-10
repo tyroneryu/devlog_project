@@ -1,0 +1,7 @@
+{
+  "name": "Taeyun Ryu Portfolio",
+  "description": "A high-fidelity, event-driven engineering portfolio featuring 3D interactive elements and markdown-based content.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
