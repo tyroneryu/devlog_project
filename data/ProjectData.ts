@@ -49,7 +49,7 @@ We replaced all printed signage with **E-Ink displays** and LED walls. Carpeting
   {
     id: 'p2',
     title: 'Trigger Forge',
-    description: 'High-performance video streaming platform using WebRTC and edge computing for sub-second latency.',
+    description: 'Event-driven IaC and CI/CD pipeline automating the entire cloud infrastructure lifecycle via Terraform and AWS SAM.',
     techStack: ['Go', 'WebRTC', 'Next.js'],
     category: 'Dev',
     linkType: 'architecture',
@@ -120,7 +120,7 @@ We replaced all printed signage with **E-Ink displays** and LED walls. Carpeting
   {
     id: 'p3',
     title: 'GitKubeOps',
-    description: 'Decentralized exchange aggregator visualizing arbitrage opportunities in a 3D interactive environment.',
+    description: 'Declarative Kubernetes delivery workflow implementing modern GitOps principles with Argo CD and Helm.',
     techStack: ['Solidity', 'Three.js', 'Rust'],
     category: 'Dev',
     linkType: 'architecture',
@@ -179,22 +179,57 @@ app.py\\' and watch as the GitHub Action builds the image and Argo CD triggers t
   {
     id: 'p4',
     title: 'Tech Blog',
-    description: 'Real-time speech synthesis engine for accessibility tools, providing natural sounding voice generation.',
+    description: 'High-fidelity engineering portfolio featuring neural navigation, Gemini-driven synthesis, and multimodal vision analysis.',
     techStack: ['C++', 'WASM', 'AudioWorklet'],
     category: 'Dev',
     linkType: 'site',
     sourceLink: 'https://github.com/tyroneryu/gitkubeops',
     image: '/images/blog_taeyun.png',
     content: `
-The Eco-Future Expo wasn't just a trade show; it was a statement. The goal was to prove that large-scale exhibitions could be environmentally responsible.
+# Event-Driven Engineering Portfolio: Taeyun Ryu
 
-### Sustainability First
-We replaced all printed signage with **E-Ink displays** and LED walls. Carpeting was eliminated in favor of polished concrete to reduce single-use waste. All food served was locally sourced within 100km.
+> **"Where MICE Logistics meets Microservices."**
 
-### Key Deliverables
-*   **Green Logistics**: Consolidated freight shipping to reduce carbon footprint by 40%.
-*   **Digital Lead Retrieval**: Eliminated paper business cards with NFC badges.
-*   **Impact Reporting**: Published a comprehensive ISO 20121 compliance report post-event.
+This is a high-fidelity, interactive portfolio website designed for a hybrid professional who specializes in both **Software Engineering** and **MICE Planning**.
+
+---
+
+## 🚀 Key Features
+1. **Neural Command Palette (\`Cmd + K\`)**: Gemini 3 Flash powered navigation.
+2. **The Synergy Engine**: AI-driven project synthesis from actual blog posts.
+3. **Global Intelligence Grid**: Real-time Search & Maps grounding.
+4. **Retro Vision Terminal**: Multimodal ASCII and UI/UX analysis.
+
+---
+
+## 🛠️ Setup & Security (CRITICAL)
+
+### 1. API Key Security
+This project uses the Gemini API. **Never commit your \`.env\` file to GitHub.**
+If your key is leaked, Google will automatically disable it.
+
+### 2. Local Setup
+1. Create a \`.env\` file in the root directory.
+2. Add your key:
+   \`\`\`env
+   GEMINI_API_KEY=your_actual_key_here
+   ADMIN_PASSWORD=your_admin_login_password
+   \`\`\`
+3. Run \`npm install\` and \`npm run dev:full\`.
+
+### 3. Production Deployment (e.g., Render.com)
+1. Go to your Dashboard -> **Environment Variables**.
+2. Add \`GEMINI_API_KEY\` and \`ADMIN_PASSWORD\`.
+3. Do **NOT** upload the \`.env\` file to your repository.
+
+---
+
+## 📂 Project Structure
+- \`/posts\`: Drop \`.md\` files here to update the blog instantly.
+- \`/components\`: UI primitives and AI engines.
+- \`server.js\`: Node.js Express backend.
+
+© 2024 Taeyun Ryu. Crafted with precision and intelligence.
     `
   },
   {
@@ -220,7 +255,7 @@ We replaced all printed signage with **E-Ink displays** and LED walls. Carpeting
   {
     id: 'p5',
     title: 'Malware Analysis Service',
-    description: 'Real-time malware analysis service via AWS CI/CD automatiation.',
+    description: 'High-performance security service utilizing FastAPI and Machine Learning for real-time binary threat classification.',
     techStack: ['Python','Tensorflow'],
     category: 'Dev',
     linkType: 'architecture',
@@ -228,15 +263,104 @@ We replaced all printed signage with **E-Ink displays** and LED walls. Carpeting
     sourceLink: 'https://github.com/tyroneryu/malware-analysis-service',
     image: '/images/malware_analysis.png',
     content: `
-The Eco-Future Expo wasn't just a trade show; it was a statement. The goal was to prove that large-scale exhibitions could be environmentally responsible.
+# 🛡️ Malware Analysis Service (FastAPI + CAPA + YARA + ML)
 
-### Sustainability First
-We replaced all printed signage with **E-Ink displays** and LED walls. Carpeting was eliminated in favor of polished concrete to reduce single-use waste. All food served was locally sourced within 100km.
+A real-time malware analysis backend system that performs static feature extraction using [CAPA](https://github.com/mandiant/capa) and [YARA](https://github.com/VirusTotal/yara), followed by classification using a pre-trained ML model or AWS SageMaker depending on hash lookup results.
 
-### Key Deliverables
-*   **Green Logistics**: Consolidated freight shipping to reduce carbon footprint by 40%.
-*   **Digital Lead Retrieval**: Eliminated paper business cards with NFC badges.
-*   **Impact Reporting**: Published a comprehensive ISO 20121 compliance report post-event.
+---
+
+## 🚀 Features
+
+- 🧠 **ML-based malware classification** using XGBoost
+- 🔬 **Static analysis with CAPA + YARA rules**
+- 🧾 **SHA-256-based deduplication & conditional pipeline**
+- ☁️ **AWS S3 + SageMaker Inference** integration
+- 🐳 **Docker-compatible FastAPI backend**
+- 📤 Designed for frontend upload & JSON result return
+
+---
+
+## 🗂️ Directory Structure
+
+\`\`\`
+backend/
+├── app/
+│   ├── routes/              # FastAPI route (/analyze-upload/)
+│   ├── services/            # Core logic (ML, SageMaker, file routing)
+│   ├── utils/               # capa, yara, sha256, etc.
+│   ├── models/              # Local .pkl model
+│   └── uploads/             # Uploaded binaries (auto-managed)
+├── main.py                  # FastAPI entry point
+├── Dockerfile
+├── requirements.txt
+└── .dockerignore
+\`\`\`
+
+---
+
+## ⚙️ How It Works
+
+1. User uploads a binary file via \`/analyze-upload/\` endpoint
+2. Server saves and hashes the file (SHA-256)
+3. If hash is new:
+   - Uploads to S3
+   - Sends key to SageMaker endpoint for prediction
+   - Updates \`hashes.json\`
+4. If hash already known:
+   - Uses local ML model to predict
+5. Returns JSON result to frontend
+
+---
+
+## 📦 Setup & Run
+
+### Local Dev
+
+\`\`\`bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+\`\`\`
+
+### Docker
+
+\`\`\`bash
+docker build -t malware-api .
+docker run -d -p 8000:8000 --name malware-api malware-api
+\`\`\`
+
+---
+
+## 🧪 Test API
+
+\`\`\`bash
+curl -X POST "http://localhost:8000/analyze-upload/" \\
+     -F "file=@sample.exe"
+\`\`\`
+
+---
+
+## ⚠️ Requirements
+
+- \`capa\` CLI must be installed and accessible
+- \`yara\` CLI must be installed
+- AWS credentials must be configured in \`~/.aws/credentials\`
+- Trained \`xgboost_model.pkl\` must exist in \`app/models/\`
+- Paths for CAPA & YARA rules must be configured
+
+---
+
+## 📄 License
+
+MIT License
+
+---
+
+## 🙋 About
+
+Built as part of a cybersecurity portfolio project to demonstrate malware feature extraction, ML classification, and cloud automation using AWS SageMaker.# Trigger test
+
     `
   }
 ];
