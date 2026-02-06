@@ -13,7 +13,7 @@ const Hero: React.FC = () => {
                     frameBorder="0"
                     width="100%"
                     height="100%"
-                    className="w-full h-full scale-105 pointer-events-none"
+                    className="w-full h-full scale-105" // Removed pointer-events-none
                     title="Spline 3D Robot"
                 ></iframe>
                 {/* Added darker overlay directly on top of iframe to dampen the 3D model brightness */}

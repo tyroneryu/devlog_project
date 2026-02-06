@@ -131,7 +131,7 @@ const HistorySection: React.FC = () => {
         },
         {
             id: 'c3',
-            title: 'COEX',
+            title: 'PremiumPass International',
             role: 'MICE Business Intern',
             period: '2024.07.15 - 2024.08.30',
             type: 'career'
@@ -162,7 +162,7 @@ const HistorySection: React.FC = () => {
         },
         {
             id: 'e3',
-            title: 'GDSC (Google Developer Student Clubs)',
+            title: 'HI-ARC (HongIk-Algorithm Research Club',
             role: 'OB',
             period: '2024.03 - 2025.08',
             type: 'activity'
