@@ -156,14 +156,14 @@ const HistorySection: React.FC = () => {
         {
             id: 'e2',
             title: 'IHHH (Institute of Hongik, Hacking, Honor)',
-            role: 'OB',
+            role: 'PWNABLE / 1-day CVE Instructor',
             period: '2024.03 - 2025.08',
             type: 'activity'
         },
         {
             id: 'e3',
             title: 'HI-ARC (HongIk-Algorithm Research Club',
-            role: 'OB',
+            role: 'Dyanmic Programming Instructor',
             period: '2024.03 - 2025.08',
             type: 'activity'
         },

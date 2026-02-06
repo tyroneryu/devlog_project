@@ -3,12 +3,15 @@ import react from '@vitejs/plugin-react';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, (process as any).cwd(), '');
+  // Load env file based on `mode` in the current working directory.
+  // Using '' as the third argument loads all variables regardless of VITE_ prefix.
+  const env = loadEnv(mode, process.cwd(), '');
 
   return {
     plugins: [react()],
     define: {
-      'process.env.API_KEY': JSON.stringify(env.API_KEY || process.env.API_KEY),
+      // Map the user's GEMINI_API_KEY to the expected process.env.API_KEY
+      'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY || env.API_KEY || ''),
     },
     server: {
       proxy: {
