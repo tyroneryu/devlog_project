@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Zap, Sparkles, RefreshCw, ExternalLink, AlertCircle, Terminal, Cpu, Target, Binary, Fingerprint, ShieldAlert } from 'lucide-react';
+import { Zap, Sparkles, RefreshCw, Link2, ExternalLink } from 'lucide-react';
 import { GoogleGenAI, Type } from "@google/genai";
 import { useBlogData } from '../hooks/useBlogData';
 
 interface SynergyResult {
   title: string;
   concept: string;
-  tech_stack: string[];
-  core_thesis: string;
-  strategic_value: string;
   source_articles: {
     title: string;
     id: string;
@@ -21,76 +18,52 @@ const SynergyEngine: React.FC = () => {
   const { posts } = useBlogData();
   const [synergyData, setSynergyData] = useState<SynergyResult | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const blogContext = posts.map(post => `- [${post.category}] ${post.title}: ${post.excerpt}`).join('\n');
+  // Dynamically build context from fetched posts, INCLUDING THE ID for linking
+  const blogContext = posts.map(post => `- [${post.category}] (ID: ${post.id}) ${post.title}: ${post.excerpt}`).join('\n');
 
   const generateSynergyIdea = async () => {
-    const apiKey = process.env.API_KEY;
-
-    if (!apiKey) {
-      setError("NEURAL_LINK_NULL: API_KEY is required for synthesis.");
-      return;
-    }
-
     setIsGenerating(true);
     setSynergyData(null);
-    setError(null);
-
     try {
-      const ai = new GoogleGenAI({ apiKey });
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-      const systemInstruction = `You are a visionary CTO & Experience Architect specializing in Cyber-Industrial Systems. 
-      Your thinking is inspired by the intersection of Low-Level Engineering and Global MICE Logistics.
+      const prompt = `You are the "Synergy Engine" for a hybrid professional who is both a Software Engineer and a MICE (Event) Planner.
+      
+      Analyze their actual written articles to understand their specific niche interests:
+      ${blogContext || "User has no articles yet, use general knowledge about Event Tech."}
 
-      STRICT OUTPUT PROTOCOLS:
-      1. TERMINOLOGY: Use high-fidelity engineering language (e.g., "deterministic latency," "asynchronous orchestration," "zero-knowledge verification").
-      2. NO CLICHÉS: Ban words like "Smart," "Innovative," "Seamless," or "Game-changer."
-      3. LOGICAL COLLISION: Synthesize a project that solves a physical world problem (Event Ops) using advanced software paradigms (Distributed Systems, WASM, Edge, etc.).
-      4. CATEGORY CREATION: Don't just suggest an app; suggest a "System Prototype" or a "Protocol."
-
-      CONTEXT (YOUR KNOWLEDGE BASE):
-      ${blogContext}`;
-
-      const prompt = `Perform a deep neural synthesis based on my technical DNA. 
-      Create a project concept that sounds like a classified DARPA prototype for the MICE/Tech sector.
-
-      Response must be a strict JSON object:
-      {
-        "title": "A sharp, multi-syllabic technical name",
-        "concept": "A detailed 2-sentence architectural breakdown.",
-        "tech_stack": ["4 specific high-performance tools/protocols"],
-        "core_thesis": "The underlying engineering philosophy of this system.",
-        "strategic_value": "The paradigm shift this project creates.",
-        "source_articles": [{"title": "Post Title", "id": "Post ID"}]
-      }`;
+      Task: Generate a specific, innovative project concept that combines their TECHNICAL expertise (e.g. React, K8s, Event-Driven Architecture) with their EVENT expertise (e.g. Sustainability, Crowd Control, Registration).
+      
+      Requirements:
+      1. The idea must clearly reference specific technologies or concepts mentioned in their blogs.
+      2. You MUST identify exactly which 2 or 3 blog posts you "combined" to create this idea. 
+      3. Return the exact Title and the exact ID for each source article found in the context.
+      
+      Example Output: "Zero-Waste IoT Tracker" combining "Zero-Waste Event Protocols" (ID: mice-01) and "Node.js Streams" (ID: dev-02).`;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview', // High quota, high performance
+        model: 'gemini-3-flash-preview',
         contents: prompt,
         config: {
-          systemInstruction,
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
             properties: {
               title: { type: Type.STRING },
               concept: { type: Type.STRING },
-              tech_stack: { type: Type.ARRAY, items: { type: Type.STRING } },
-              core_thesis: { type: Type.STRING },
-              strategic_value: { type: Type.STRING },
               source_articles: {
                 type: Type.ARRAY,
                 items: {
                   type: Type.OBJECT,
                   properties: {
                     title: { type: Type.STRING },
-                    id: { type: Type.STRING }
+                    id: { type: Type.STRING, description: "The ID of the blog post as listed in the context." }
                   }
-                }
+                },
+                description: "The list of specific blog posts used as inspiration."
               }
-            },
-            required: ["title", "concept", "tech_stack", "core_thesis", "strategic_value", "source_articles"]
+            }
           }
         }
       });
@@ -98,13 +71,13 @@ const SynergyEngine: React.FC = () => {
       if (response.text) {
         setSynergyData(JSON.parse(response.text));
       }
-    } catch (e: any) {
-      console.error("Synergy Engine Error:", e);
-      if (e.message?.includes('429')) {
-        setError("QUOTA_EXHAUSTED: Neural link is saturated. Please wait 60 seconds.");
-      } else {
-        setError("SYNTHESIS_FAILED: System integrity compromised.");
-      }
+    } catch (e) {
+      console.error(e);
+      setSynergyData({
+        title: "System Error",
+        concept: "Creativity buffer underflow. Please check the API key or try again.",
+        source_articles: []
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -112,114 +85,85 @@ const SynergyEngine: React.FC = () => {
 
   return (
       <section id="synergy" className="py-24 px-6 md:px-12 max-w-7xl mx-auto border-b border-neutral-900">
-        <div className="bg-[#0a0a0a] border border-white/5 rounded-[40px] p-8 md:p-16 relative overflow-hidden group/section">
-          <div className="absolute inset-0 opacity-10 pointer-events-none">
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[length:50px_50px]" />
-          </div>
+        <div className="bg-gradient-to-br from-neutral-900 via-black to-neutral-900 border border-white/5 rounded-3xl p-8 md:p-12 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-32 bg-purple-500/10 blur-[100px] rounded-full pointer-events-none" />
+          <div className="absolute bottom-0 left-0 p-32 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col lg:flex-row items-stretch justify-between gap-20">
-            <div className="lg:w-[40%] space-y-10">
-              <div className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-500/10 rounded-lg">
-                    <Binary size={20} className="text-blue-400" />
-                  </div>
-                  <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.4em] font-mono">Neural Synthesizer v3.5</span>
-                </div>
-                <h3 className="text-5xl md:text-7xl font-bold text-white tracking-tighter leading-[0.9]">
-                  Synergy <br/>
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">Engine.</span>
-                </h3>
-                <p className="text-neutral-500 text-lg leading-relaxed font-light">
-                  Cross-referencing technical whitepapers and operational logs to simulate high-concept project prototypes.
-                </p>
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
+            <div className="md:w-1/2">
+              <div className="flex items-center gap-2 mb-4">
+                <Zap size={20} className="text-yellow-400 fill-yellow-400" />
+                <span className="text-xs font-bold text-yellow-400 uppercase tracking-widest">Innovation Lab</span>
               </div>
-
-              <div className="space-y-4">
-                <button
-                    onClick={generateSynergyIdea}
-                    disabled={isGenerating}
-                    className="w-full md:w-auto flex items-center justify-center gap-4 px-10 py-5 bg-white text-black rounded-2xl font-black text-lg hover:bg-blue-50 transition-all disabled:opacity-50 shadow-[0_0_50px_rgba(255,255,255,0.1)] active:scale-95 group/btn"
-                >
-                  {isGenerating ? <RefreshCw className="animate-spin" size={24} /> : <Zap size={24} className="group-hover:fill-yellow-400 transition-all" />}
-                  {isGenerating ? "RECONSTRUCTING..." : "INITIALIZE SYNTHESIS"}
-                </button>
-              </div>
-
-              {error && (
-                  <motion.div
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="p-4 rounded-xl bg-red-500/5 border border-red-500/20 text-red-400 text-xs font-mono flex items-center gap-3"
-                  >
-                    <ShieldAlert size={14} className="shrink-0" />
-                    <span>[SIGNAL_ERROR]: {error}</span>
-                  </motion.div>
-              )}
+              <h3 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                The <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Synergy Engine</span>.
+              </h3>
+              <p className="text-neutral-400 text-lg leading-relaxed mb-8">
+                This isn't random generation. The AI analyzes <strong>my actual blog posts</strong>—fetched live from the backend—to synthesize a unique hybrid project concept tailored to my specific expertise.
+              </p>
+              <button
+                  onClick={generateSynergyIdea}
+                  disabled={isGenerating}
+                  className="group flex items-center gap-3 px-8 py-4 bg-white text-black rounded-full font-bold hover:bg-neutral-200 transition-all disabled:opacity-50"
+              >
+                {isGenerating ? <RefreshCw className="animate-spin" /> : <Sparkles />}
+                {isGenerating ? "Synthesizing..." : "Generate Custom Idea"}
+              </button>
             </div>
 
-            <div className="lg:w-[60%] min-h-[500px] flex items-center justify-center">
+            <div className="md:w-1/2 w-full min-h-[200px] flex items-center justify-center">
               <AnimatePresence mode='wait'>
                 {synergyData ? (
                     <motion.div
                         key="idea"
-                        initial={{ opacity: 0, scale: 0.98, y: 10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        className="bg-neutral-900/40 backdrop-blur-3xl border border-white/10 p-10 md:p-12 rounded-[32px] w-full shadow-2xl relative"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-2xl w-full shadow-2xl"
                     >
-                      <div className="absolute top-8 right-10 text-[8px] font-mono text-blue-500/40 tracking-[0.3em]">STABLE_BUILD_F32</div>
-
-                      <div className="mb-12">
-                        <div className="text-[10px] font-mono text-blue-400 mb-3 uppercase tracking-[0.5em] flex items-center gap-2">
-                          <Target size={12} /> Project Designation
-                        </div>
-                        <h4 className="text-4xl md:text-5xl font-black text-white tracking-tighter">{synergyData.title}</h4>
+                      <div className="text-xl md:text-2xl font-bold text-white mb-4">
+                        {synergyData.title}
                       </div>
+                      <p className="text-neutral-300 leading-relaxed mb-6">
+                        {synergyData.concept}
+                      </p>
 
-                      <div className="grid md:grid-cols-2 gap-10 mb-12">
-                        <div className="space-y-4">
-                          <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-widest border-l-2 border-blue-500 pl-3">Architecture Payload</div>
-                          <p className="text-neutral-300 text-sm leading-relaxed font-light">{synergyData.concept}</p>
-                        </div>
-                        <div className="space-y-4">
-                          <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-widest border-l-2 border-purple-500 pl-3">Core Thesis</div>
-                          <p className="text-neutral-400 text-sm italic font-light leading-relaxed">
-                            "{synergyData.core_thesis}"
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2 mb-12">
-                        {synergyData.tech_stack.map(tech => (
-                            <span key={tech} className="px-3 py-1.5 bg-black/50 rounded-lg border border-white/5 text-[10px] font-mono text-blue-300 flex items-center gap-2">
-                                <Cpu size={10} /> {tech}
-                            </span>
-                        ))}
-                      </div>
-
-                      <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="space-y-3">
-                          <div className="text-[9px] font-mono text-neutral-600 uppercase tracking-widest">Inspiration Nodes</div>
-                          <div className="flex flex-wrap gap-2">
-                            {synergyData.source_articles?.map((article, idx) => (
-                                <Link key={idx} to={`/blog/${article.id}`} className="flex items-center gap-2 px-3 py-1 bg-white/5 text-neutral-400 text-[10px] hover:text-white transition-all rounded">
-                                  <span>{article.title}</span>
-                                  <ExternalLink size={8} />
-                                </Link>
-                            ))}
+                      {/* Source Articles Display */}
+                      {synergyData.source_articles && synergyData.source_articles.length > 0 && (
+                          <div className="pt-6 border-t border-white/10">
+                            <div className="flex items-center gap-2 mb-3 text-neutral-500">
+                              <Link2 size={14} />
+                              <span className="text-xs font-mono uppercase tracking-widest">Neural Connections (Sources)</span>
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                              {synergyData.source_articles.map((article, idx) => (
+                                  <Link
+                                      key={idx}
+                                      to={`/blog/${article.id}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="group/link flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-medium hover:bg-blue-500/20 hover:text-white hover:border-blue-500/40 transition-all"
+                                  >
+                                    <span>{article.title}</span>
+                                    <ExternalLink size={10} className="opacity-50 group-hover/link:opacity-100 transition-opacity" />
+                                  </Link>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                        <div className="shrink-0 font-mono text-[9px] text-neutral-700 bg-black/40 px-3 py-1 rounded-full border border-white/5">
-                          VALIDATED_BY_FLASH_LITE
-                        </div>
-                      </div>
+                      )}
                     </motion.div>
                 ) : (
-                    <motion.div key="placeholder" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center space-y-8">
-                      <div className="w-24 h-24 border border-neutral-900 rounded-[30px] flex items-center justify-center mx-auto relative">
-                        <Terminal size={32} className="text-neutral-800" />
+                    <motion.div
+                        key="placeholder"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="text-center text-neutral-600"
+                    >
+                      <div className="w-16 h-16 border-2 border-neutral-800 rounded-full flex items-center justify-center mx-auto mb-4 border-dashed animate-spin-slow">
+                        <Zap size={24} />
                       </div>
-                      <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-neutral-700">Awaiting Signal Inflow</p>
+                      <p className="text-sm uppercase tracking-widest">Awaiting Analysis</p>
                     </motion.div>
                 )}
               </AnimatePresence>
