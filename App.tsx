@@ -15,7 +15,6 @@ import AiLab from './pages/AiLab';
 import Arcade from './pages/Arcade';
 import MusicWidget from './components/MusicWidget';
 import AdminAssets from './pages/AdminAssets';
-import CustomCursor from './components/CustomCursor';
 import Preloader from './components/Preloader';
 import { AuthProvider } from './context/AuthContext';
 import { AlertCircle } from 'lucide-react';
@@ -66,7 +65,6 @@ const App: React.FC = () => {
           <NeuralPalette />
           <EasterEgg />
           <MusicWidget />
-          <CustomCursor />
           <div className="flex flex-col min-h-screen bg-black text-white font-sans">
             <Navbar />
             <main className="flex-grow">
