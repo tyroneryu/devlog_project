@@ -27,7 +27,6 @@ let challenges = [];
 const rooms = {};
 
 // --- Dynamic Socket.io Setup (Fail-safe) ---
-// This prevents the server from crashing if 'socket.io' is missing in node_modules
 (async () => {
   try {
     const { Server } = await import('socket.io');
@@ -41,7 +40,6 @@ const rooms = {};
     console.log('🎮 Socket.io initialized successfully.');
 
     io.on('connection', (socket) => {
-      console.log('🔌 New Client Connected:', socket.id);
       socket.emit('update_challenges', challenges);
 
       socket.on('create_challenge', (playerName) => {
@@ -66,8 +64,6 @@ const rooms = {};
           challenges = challenges.filter(c => c.id !== roomId);
           io.emit('update_challenges', challenges);
           io.to(roomId).emit('game_start', { players: room.players, roomId });
-        } else {
-          socket.emit('error', 'Room is full or does not exist.');
         }
       });
 
@@ -119,34 +115,17 @@ const rooms = {};
       });
     });
   } catch (error) {
-    console.warn("⚠️ Warning: 'socket.io' module not found. Real-time game features will be disabled, but the server will run.");
-    console.warn("   Run 'npm install socket.io socket.io-client' to fix this.");
+    console.warn("⚠️ Socket.io module issue.");
   }
 })();
 
 // --- Security Middleware ---
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "cdn.tailwindcss.com", "cdn.socket.io"],
-      styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
-      fontSrc: ["'self'", "fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "images.unsplash.com", "my.spline.design"],
-      frameSrc: ["'self'", "my.spline.design"],
-      connectSrc: ["'self'", "http://localhost:3001", "ws://localhost:3001", "http://localhost:5173", "ws://localhost:5173", "https://generativelanguage.googleapis.com"],
-      objectSrc: ["'none'"],
-      upgradeInsecureRequests: [],
-    },
-  },
+  contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
 }));
 
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? false : '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(cors());
 
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -160,31 +139,22 @@ app.use(express.json({ limit: '10kb' }));
 const POSTS_DIR = path.join(__dirname, 'posts');
 const DATA_DIR = path.join(__dirname, 'data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
+const GUESTBOOK_FILE = path.join(__dirname, 'guestbook.json');
 
-// --- File System & DB Helper Functions ---
+// --- File System Helpers ---
 
 const initData = async () => {
   try {
-    try {
-      await fs.access(POSTS_DIR);
-    } catch {
-      await fs.mkdir(POSTS_DIR, { recursive: true });
-      console.log('📁 Created /posts directory');
+    await fs.mkdir(POSTS_DIR, { recursive: true });
+    await fs.mkdir(DATA_DIR, { recursive: true });
+    
+    try { await fs.access(DB_FILE); } catch {
+      await fs.writeFile(DB_FILE, JSON.stringify({ leaderboard: [] }, null, 2));
     }
-
-    try {
-      await fs.access(DATA_DIR);
-    } catch {
-      await fs.mkdir(DATA_DIR, { recursive: true });
-      console.log('📁 Created /data directory');
-    }
-
-    try {
-      await fs.access(DB_FILE);
-    } catch {
-      const initialDB = { guestbook: [], leaderboard: [] };
-      await fs.writeFile(DB_FILE, JSON.stringify(initialDB, null, 2));
-      console.log('💾 Created database.json');
+    
+    // 방명록 파일이 없으면 초기화
+    try { await fs.access(GUESTBOOK_FILE); } catch {
+      await fs.writeFile(GUESTBOOK_FILE, JSON.stringify([], null, 2));
     }
   } catch (error) {
     console.error("Initialization Error:", error);
@@ -195,48 +165,48 @@ const getDB = async () => {
   try {
     const data = await fs.readFile(DB_FILE, 'utf-8');
     return JSON.parse(data);
-  } catch (error) {
-    return { guestbook: [], leaderboard: [] };
-  }
+  } catch { return { leaderboard: [] }; }
 };
 
 const saveDB = async (data) => {
+  await fs.writeFile(DB_FILE, JSON.stringify(data, null, 2));
+};
+
+// 방명록 전용 헬퍼
+const getGuestbook = async () => {
   try {
-    await fs.writeFile(DB_FILE, JSON.stringify(data, null, 2));
-  } catch (error) {
-    console.error("DB Write Error", error);
-  }
+    const data = await fs.readFile(GUESTBOOK_FILE, 'utf-8');
+    return JSON.parse(data);
+  } catch { return []; }
+};
+
+const saveGuestbook = async (data) => {
+  await fs.writeFile(GUESTBOOK_FILE, JSON.stringify(data, null, 2));
 };
 
 const parseMarkdownFile = (content, filename) => {
   const normalizedContent = content.replace(/\r\n/g, '\n');
   const separator = '---\n';
   const parts = normalizedContent.split(separator);
-
   if (parts.length < 3) return null;
-
   const frontmatterBlock = parts[1];
   const body = parts.slice(2).join(separator).trim();
   const metadata = {};
-
   frontmatterBlock.split('\n').forEach(line => {
     const colonIndex = line.indexOf(':');
     if (colonIndex === -1) return;
     const key = line.slice(0, colonIndex).trim();
     let value = line.slice(colonIndex + 1).trim();
-
     if (value.startsWith('[') && value.endsWith(']')) {
       metadata[key] = value.slice(1, -1).split(',').map(s => s.trim());
     } else {
       metadata[key] = value;
     }
   });
-
   return { ...metadata, content: body, id: metadata.id || filename.replace('.md', '') };
 };
 
-// Initialize system immediately
-initData().catch(console.error);
+initData();
 
 // --- Auth Middleware ---
 const authenticateToken = (req, res, next) => {
@@ -265,27 +235,13 @@ app.post('/api/auth/login', (req, res) => {
 app.post('/api/admin/posts', authenticateToken, async (req, res) => {
   try {
     const { title, excerpt, content, tags, category } = req.body;
-    if (!title || !content) return res.status(400).json({ error: "Title and Content are required" });
-
     const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const filename = `${slug}.md`;
     const date = new Date().toISOString().split('T')[0];
-
-    const fileContent = `---
-id: ${slug}
-title: ${title}
-excerpt: ${excerpt || ''}
-date: ${date}
-tags: [${tags.join(', ')}]
-category: ${category || 'Dev'}
----
-
-${content}`;
-
+    const fileContent = `---\nid: ${slug}\ntitle: ${title}\nexcerpt: ${excerpt || ''}\ndate: ${date}\ntags: [${tags.join(', ')}]\ncategory: ${category || 'Dev'}\n---\n\n${content}`;
     await fs.writeFile(path.join(POSTS_DIR, filename), fileContent, 'utf-8');
     res.json({ success: true, id: slug });
   } catch (error) {
-    console.error("Failed to create post:", error);
     res.status(500).json({ error: "Failed to save post" });
   }
 });
@@ -301,39 +257,34 @@ app.get('/api/posts', async (req, res) => {
     const validPosts = posts.filter(p => p !== null);
     validPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
     res.json(validPosts);
-  } catch (error) {
-    // Return empty array instead of crashing
-    res.json([]);
-  }
+  } catch (error) { res.json([]); }
 });
 
 app.get('/api/posts/:id', async (req, res) => {
   try {
     const files = await fs.readdir(POSTS_DIR);
-    const mdFiles = files.filter(file => file.endsWith('.md'));
-    for (const file of mdFiles) {
+    for (const file of files.filter(f => f.endsWith('.md'))) {
       const content = await fs.readFile(path.join(POSTS_DIR, file), 'utf-8');
       const post = parseMarkdownFile(content, file);
-      if (post && post.id === req.params.id) {
-        return res.json(post);
-      }
+      if (post && post.id === req.params.id) return res.json(post);
     }
     res.status(404).json({ error: 'Post not found' });
-  } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
+  } catch (error) { res.status(500).json({ error: 'Internal Error' }); }
 });
 
+// 방명록 불러오기 (guestbook.json 사용)
 app.get('/api/guestbook', async (req, res) => {
   try {
-    const db = await getDB();
-    const sorted = db.guestbook.sort((a, b) => new Date(b.date) - new Date(a.date));
+    const messages = await getGuestbook();
+    // 최신순 정렬
+    const sorted = messages.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     res.json(sorted);
   } catch (error) {
-    res.status(500).json({ error: 'Database Unavailable' });
+    res.status(500).json({ error: 'Failed to fetch guestbook' });
   }
 });
 
+// 방명록 작성하기 (guestbook.json 사용)
 app.post('/api/guestbook', async (req, res) => {
   try {
     const { name, message, _honey } = req.body;
@@ -349,9 +300,9 @@ app.post('/api/guestbook', async (req, res) => {
       date: new Date().toISOString()
     };
 
-    const db = await getDB();
-    db.guestbook.push(newMessage);
-    await saveDB(db);
+    const messages = await getGuestbook();
+    messages.push(newMessage);
+    await saveGuestbook(messages);
 
     res.status(201).json(newMessage);
   } catch (error) {
@@ -364,22 +315,14 @@ app.get('/api/leaderboard/:gameId', async (req, res) => {
     const { gameId } = req.params;
     const db = await getDB();
     const gameScores = db.leaderboard.filter(entry => entry.game_id === gameId);
-
-    const topScores = gameScores
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 10);
-
+    const topScores = gameScores.sort((a, b) => b.score - a.score).slice(0, 10);
     res.json(topScores);
-  } catch (error) {
-    res.status(500).json({ error: 'Database Unavailable' });
-  }
+  } catch (error) { res.status(500).json({ error: 'Database Error' }); }
 });
 
 app.post('/api/leaderboard', async (req, res) => {
   try {
     const { gameId, playerName, score } = req.body;
-    if (!gameId || !playerName || score === undefined) return res.status(400).json({ error: 'Invalid input' });
-
     const newEntry = {
       id: Date.now(),
       game_id: gameId,
@@ -387,29 +330,19 @@ app.post('/api/leaderboard', async (req, res) => {
       score: Number(score),
       date: new Date().toISOString()
     };
-
     const db = await getDB();
     db.leaderboard.push(newEntry);
     await saveDB(db);
-
     res.status(201).json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to save score' });
-  }
+  } catch (error) { res.status(500).json({ error: 'Failed to save score' }); }
 });
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, 'dist')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-  });
+  app.get('*', (req, res) => { res.sendFile(path.join(__dirname, 'dist', 'index.html')); });
 }
-
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
-});
 
 server.listen(PORT, () => {
   console.log(`🚀 Secure Server running on http://localhost:${PORT}`);
+  console.log(`📂 Reading Guestbook from: ${GUESTBOOK_FILE}`);
 });
