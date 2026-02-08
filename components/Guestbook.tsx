@@ -87,7 +87,7 @@ const Guestbook: React.FC = () => {
               <span className="text-xs font-bold text-pink-500 uppercase tracking-widest font-mono">Communication Log</span>
             </div>
 
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
               Leave a <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">Signal</span>.
             </h2>
             <p className="text-neutral-400 text-lg mb-12">
