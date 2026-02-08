@@ -185,7 +185,8 @@ app.get('/api/leaderboard/:gameId', async (req, res) => {
 const DIST_PATH = path.join(ROOT_DIR, 'dist');
 app.use(express.static(DIST_PATH));
 
-app.get('*', (req, res) => {
+// SPA catch-all fix for Express 5: '*' -> '/*'
+app.get('/*', (req, res) => {
   if (req.path.startsWith('/api')) return res.status(404).send('Not Found');
   res.sendFile(path.join(DIST_PATH, 'index.html'));
 });
