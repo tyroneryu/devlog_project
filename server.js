@@ -1,3 +1,4 @@
+
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs/promises';
@@ -13,7 +14,6 @@ import http from 'http';
 // Explicitly load env vars
 dotenv.config();
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "$3vptRTUN";
@@ -21,6 +21,13 @@ const JWT_SECRET = process.env.JWT_SECRET || "super-secret-key-change-this";
 
 // Create HTTP Server
 const server = http.createServer(app);
+
+// --- 배포 환경 호환 경로 설정 (process.cwd()는 프로젝트 루트를 가리킵니다) ---
+const ROOT_DIR = process.cwd();
+const POSTS_DIR = path.join(ROOT_DIR, 'posts');
+const DATA_DIR = path.join(ROOT_DIR, 'data');
+const DB_FILE = path.join(DATA_DIR, 'db.json');
+const GUESTBOOK_FILE = path.join(ROOT_DIR, 'guestbook.json');
 
 // --- Game Logic State ---
 let challenges = [];
@@ -32,7 +39,7 @@ const rooms = {};
     const { Server } = await import('socket.io');
     const io = new Server(server, {
       cors: {
-        origin: process.env.NODE_ENV === 'production' ? false : "*",
+        origin: "*", // 배포 환경에서는 모든 오리진 허용 (필요시 특정 도메인으로 제한 가능)
         methods: ["GET", "POST"]
       }
     });
@@ -115,7 +122,7 @@ const rooms = {};
       });
     });
   } catch (error) {
-    console.warn("⚠️ Socket.io module issue.");
+    console.warn("⚠️ Socket.io module issue:", error.message);
   }
 })();
 
@@ -129,51 +136,29 @@ app.use(cors());
 
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 300,
+  max: 500, // 조금 더 넉넉하게 조정
   standardHeaders: true,
   legacyHeaders: false,
 });
 app.use(globalLimiter);
 app.use(express.json({ limit: '10kb' }));
 
-// --- 배포 환경 호환 경로 설정 (process.cwd()는 프로젝트 루트를 가리킵니다) ---
-const ROOT_DIR = process.cwd();
-const POSTS_DIR = path.join(ROOT_DIR, 'posts');
-const DATA_DIR = path.join(ROOT_DIR, 'data');
-const DB_FILE = path.join(DATA_DIR, 'db.json');
-const GUESTBOOK_FILE = path.join(ROOT_DIR, 'guestbook.json');
-
 // --- File System Helpers ---
-
 const initData = async () => {
   try {
     await fs.mkdir(POSTS_DIR, { recursive: true });
     await fs.mkdir(DATA_DIR, { recursive: true });
-    
-    try { await fs.access(DB_FILE); } catch {
-      await fs.writeFile(DB_FILE, JSON.stringify({ leaderboard: [] }, null, 2));
-    }
-    
-    try { await fs.access(GUESTBOOK_FILE); } catch {
-      await fs.writeFile(GUESTBOOK_FILE, JSON.stringify([], null, 2));
-    }
+    try { await fs.access(DB_FILE); } catch { await fs.writeFile(DB_FILE, JSON.stringify({ leaderboard: [] }, null, 2)); }
+    try { await fs.access(GUESTBOOK_FILE); } catch { await fs.writeFile(GUESTBOOK_FILE, JSON.stringify([], null, 2)); }
   } catch (error) {
     console.error("Initialization Error:", error);
   }
 };
 
 const getDB = async () => {
-  try {
-    const data = await fs.readFile(DB_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch { return { leaderboard: [] }; }
+  try { const data = await fs.readFile(DB_FILE, 'utf-8'); return JSON.parse(data); } catch { return { leaderboard: [] }; }
 };
 
-const saveDB = async (data) => {
-  await fs.writeFile(DB_FILE, JSON.stringify(data, null, 2));
-};
-
-// 방명록 전용 헬퍼 (로그 보강)
 const getGuestbook = async () => {
   try {
     const data = await fs.readFile(GUESTBOOK_FILE, 'utf-8');
@@ -225,7 +210,6 @@ const authenticateToken = (req, res, next) => {
 };
 
 // --- API Routes ---
-
 app.post('/api/auth/login', (req, res) => {
   const { password } = req.body;
   if (password === ADMIN_PASSWORD) {
@@ -233,20 +217,6 @@ app.post('/api/auth/login', (req, res) => {
     res.json({ token });
   } else {
     res.status(401).json({ error: 'Invalid password' });
-  }
-});
-
-app.post('/api/admin/posts', authenticateToken, async (req, res) => {
-  try {
-    const { title, excerpt, content, tags, category } = req.body;
-    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    const filename = `${slug}.md`;
-    const date = new Date().toISOString().split('T')[0];
-    const fileContent = `---\nid: ${slug}\ntitle: ${title}\nexcerpt: ${excerpt || ''}\ndate: ${date}\ntags: [${tags.join(', ')}]\ncategory: ${category || 'Dev'}\n---\n\n${content}`;
-    await fs.writeFile(path.join(POSTS_DIR, filename), fileContent, 'utf-8');
-    res.json({ success: true, id: slug });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to save post" });
   }
 });
 
@@ -259,98 +229,55 @@ app.get('/api/posts', async (req, res) => {
       return parseMarkdownFile(content, file);
     }));
     const validPosts = posts.filter(p => p !== null);
-    validPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
+    validPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     res.json(validPosts);
   } catch (error) { res.json([]); }
 });
 
-app.get('/api/posts/:id', async (req, res) => {
-  try {
-    const files = await fs.readdir(POSTS_DIR);
-    for (const file of files.filter(f => f.endsWith('.md'))) {
-      const content = await fs.readFile(path.join(POSTS_DIR, file), 'utf-8');
-      const post = parseMarkdownFile(content, file);
-      if (post && post.id === req.params.id) return res.json(post);
-    }
-    res.status(404).json({ error: 'Post not found' });
-  } catch (error) { res.status(500).json({ error: 'Internal Error' }); }
-});
-
-// 방명록 불러오기
 app.get('/api/guestbook', async (req, res) => {
   try {
     const messages = await getGuestbook();
     const sorted = messages.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     res.json(sorted);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch guestbook' });
-  }
+  } catch (error) { res.status(500).json({ error: 'Failed to fetch' }); }
 });
 
-// 방명록 작성하기
 app.post('/api/guestbook', async (req, res) => {
   try {
     const { name, message, _honey } = req.body;
     if (_honey) return res.status(200).json({ message: 'Success' });
     if (!name || !message) return res.status(400).json({ error: 'Invalid input' });
 
-    const cleanName = xss(name.trim());
-    const cleanMessage = xss(message.trim());
     const newMessage = {
       id: Date.now().toString(),
-      name: cleanName,
-      message: cleanMessage,
+      name: xss(name.trim()),
+      message: xss(message.trim()),
       date: new Date().toISOString()
     };
-
     const messages = await getGuestbook();
     messages.push(newMessage);
     await saveGuestbook(messages);
-
     res.status(201).json(newMessage);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to save message' });
-  }
+  } catch (error) { res.status(500).json({ error: 'Failed to save' }); }
 });
 
-app.get('/api/leaderboard/:gameId', async (req, res) => {
-  try {
-    const { gameId } = req.params;
-    const db = await getDB();
-    const gameScores = db.leaderboard.filter(entry => entry.game_id === gameId);
-    const topScores = gameScores.sort((a, b) => b.score - a.score).slice(0, 10);
-    res.json(topScores);
-  } catch (error) { res.status(500).json({ error: 'Database Error' }); }
+// --- Static File Serving ---
+// Render는 빌드 후 dist 폴더를 루트에 생성합니다.
+const DIST_PATH = path.join(ROOT_DIR, 'dist');
+app.use(express.static(DIST_PATH));
+
+// API 외의 모든 경로는 index.html로 (React Router 지원)
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api')) return res.status(404).send('API endpoint not found');
+  res.sendFile(path.join(DIST_PATH, 'index.html'));
 });
 
-app.post('/api/leaderboard', async (req, res) => {
-  try {
-    const { gameId, playerName, score } = req.body;
-    const newEntry = {
-      id: Date.now(),
-      game_id: gameId,
-      player_name: xss(playerName.trim()),
-      score: Number(score),
-      date: new Date().toISOString()
-    };
-    const db = await getDB();
-    db.leaderboard.push(newEntry);
-    await saveDB(db);
-    res.status(201).json({ success: true });
-  } catch (error) { res.status(500).json({ error: 'Failed to save score' }); }
+// --- Server Execution ---
+// Render, Vercel, 로컬 모두 호환되도록 listen을 항상 실행 (Vercel은 알아서 래핑함)
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server active on port ${PORT}`);
+  console.log(`📍 Project Root: ${ROOT_DIR}`);
+  console.log(`📂 Guestbook: ${GUESTBOOK_FILE}`);
 });
-
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'dist')));
-  app.get('*', (req, res) => { res.sendFile(path.join(__dirname, 'dist', 'index.html')); });
-}
-
-// Vercel 환경에서는 app을 내보내야 합니다.
-if (process.env.NODE_ENV !== 'production') {
-  server.listen(PORT, () => {
-    console.log(`🚀 Local Server running on http://localhost:${PORT}`);
-    console.log(`📂 Reading Guestbook from: ${GUESTBOOK_FILE}`);
-  });
-}
 
 export default app;
