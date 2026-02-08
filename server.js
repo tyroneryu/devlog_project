@@ -20,17 +20,15 @@ const JWT_SECRET = process.env.JWT_SECRET || "super-secret-key";
 const MONGODB_URI = process.env.MONGODB_URI;
 
 // --- MongoDB Setup ---
-let db;
-let client;
+let db = null;
+let client = null;
 
 async function connectToDB() {
+  if (!MONGODB_URI) {
+    console.warn("⚠️ MONGODB_URI가 설정되지 않았습니다. 로컬/인메모리 모드로 동작하거나 DB 기능이 제한됩니다.");
+    return;
+  }
   try {
-    if (!MONGODB_URI) {
-      console.warn("⚠️ MONGODB_URI가 설정되지 않았습니다. DB 연동 기능이 제한됩니다.");
-      return;
-    }
-    
-    // MongoClient 인스턴스 생성을 함수 내부로 이동하여 안전하게 처리
     client = new MongoClient(MONGODB_URI);
     await client.connect();
     db = client.db('portfolio');
@@ -45,19 +43,25 @@ connectToDB();
 const ROOT_DIR = process.cwd();
 const POSTS_DIR = path.join(ROOT_DIR, 'posts');
 
-// --- Socket.io ---
+// --- Socket.io (태윤님의 기존 로직 유지) ---
 (async () => {
   try {
     const { Server } = await import('socket.io');
     const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
     io.on('connection', (socket) => {
+      console.log('User connected to socket:', socket.id);
+      
       socket.on('create_challenge', (name) => {
         const roomId = `room_${socket.id.substring(0, 5)}`;
         socket.join(roomId);
         io.emit('update_challenges', [{ id: roomId, creatorName: name }]);
       });
+      
+      // 필요한 다른 소켓 이벤트가 있다면 여기에 유지
     });
-  } catch (e) { console.warn("Socket.io issue:", e.message); }
+  } catch (e) {
+    console.warn("Socket.io issue:", e.message);
+  }
 })();
 
 // --- Middleware ---
@@ -66,6 +70,7 @@ app.use(cors());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 1000 }));
 app.use(express.json({ limit: '10kb' }));
 
+// 마크다운 파서 (태윤님의 기존 로직 유지)
 const parseMarkdownFile = (content, filename) => {
   const parts = content.replace(/\r\n/g, '\n').split('---\n');
   if (parts.length < 3) return null;
@@ -77,16 +82,23 @@ const parseMarkdownFile = (content, filename) => {
     let v = line.slice(i + 1).trim();
     metadata[k] = (v.startsWith('[') && v.endsWith(']')) ? v.slice(1, -1).split(',').map(s => s.trim()) : v;
   });
-  return { ...metadata, content: parts.slice(2).join('---\n').trim(), id: metadata.id || filename.replace('.md', '') };
+  return {
+    ...metadata,
+    content: parts.slice(2).join('---\n').trim(),
+    id: metadata.id || filename.replace('.md', '')
+  };
 };
 
 // --- API Routes ---
+
+// 1. Auth
 app.post('/api/auth/login', (req, res) => {
   if (req.body.password === ADMIN_PASSWORD) {
     res.json({ token: jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: '24h' }) });
   } else res.status(401).json({ error: 'Invalid password' });
 });
 
+// 2. Blog Posts
 app.get('/api/posts', async (req, res) => {
   try {
     const files = await fs.readdir(POSTS_DIR);
@@ -95,15 +107,18 @@ app.get('/api/posts', async (req, res) => {
       return parseMarkdownFile(content, f);
     }));
     res.json(posts.filter(p => p).sort((a, b) => new Date(b.date) - new Date(a.date)));
-  } catch (e) { res.json([]); }
+  } catch (e) {
+    res.json([]);
+  }
 });
 
-// --- MongoDB Powered Routes ---
-
-// 1. Guestbook
+// 3. Guestbook (MongoDB 연동)
 app.get('/api/guestbook', async (req, res) => {
   try {
-    if (!db) return res.json([]);
+    if (!db) {
+      // DB 연결 전이라면 빈 배열 반환하여 에러 방지
+      return res.json([]);
+    }
     const messages = await db.collection('guestbook').find().sort({ date: -1 }).toArray();
     res.json(messages);
   } catch (error) {
@@ -126,6 +141,7 @@ app.post('/api/guestbook', async (req, res) => {
       await db.collection('guestbook').insertOne(newMessage);
       res.status(201).json(newMessage);
     } else {
+      // DB가 없을 때를 대비한 백업 로직이 필요하다면 여기에 추가
       res.status(503).json({ error: 'Database not connected' });
     }
   } catch (error) {
@@ -133,11 +149,11 @@ app.post('/api/guestbook', async (req, res) => {
   }
 });
 
-// 2. Leaderboard
+// 4. Leaderboard (MongoDB 연동)
 app.post('/api/leaderboard', async (req, res) => {
   try {
     const { gameId, playerName, score } = req.body;
-    if (!db) return res.status(503).send();
+    if (!db) return res.status(503).json({ error: 'Database not connected' });
     
     await db.collection('leaderboard').insertOne({
       game_id: gameId,
@@ -147,7 +163,7 @@ app.post('/api/leaderboard', async (req, res) => {
     });
     res.status(201).json({ success: true });
   } catch (e) {
-    res.status(500).json({ error: 'Failed' });
+    res.status(500).json({ error: 'Failed to save score' });
   }
 });
 
@@ -165,13 +181,16 @@ app.get('/api/leaderboard/:gameId', async (req, res) => {
   }
 });
 
+// --- Static Serving ---
 const DIST_PATH = path.join(ROOT_DIR, 'dist');
 app.use(express.static(DIST_PATH));
+
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api')) return res.status(404).send('Not Found');
   res.sendFile(path.join(DIST_PATH, 'index.html'));
 });
 
+// --- Server Start ---
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server on port ${PORT}`);
 });
