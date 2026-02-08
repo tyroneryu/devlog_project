@@ -57,7 +57,6 @@ const POSTS_DIR = path.join(ROOT_DIR, 'posts');
         io.emit('update_challenges', [{ id: roomId, creatorName: name }]);
       });
       
-      // 필요한 다른 소켓 이벤트가 있다면 여기에 유지
     });
   } catch (e) {
     console.warn("Socket.io issue:", e.message);
@@ -115,10 +114,7 @@ app.get('/api/posts', async (req, res) => {
 // 3. Guestbook (MongoDB 연동)
 app.get('/api/guestbook', async (req, res) => {
   try {
-    if (!db) {
-      // DB 연결 전이라면 빈 배열 반환하여 에러 방지
-      return res.json([]);
-    }
+    if (!db) return res.json([]);
     const messages = await db.collection('guestbook').find().sort({ date: -1 }).toArray();
     res.json(messages);
   } catch (error) {
@@ -141,7 +137,6 @@ app.post('/api/guestbook', async (req, res) => {
       await db.collection('guestbook').insertOne(newMessage);
       res.status(201).json(newMessage);
     } else {
-      // DB가 없을 때를 대비한 백업 로직이 필요하다면 여기에 추가
       res.status(503).json({ error: 'Database not connected' });
     }
   } catch (error) {
@@ -185,15 +180,19 @@ app.get('/api/leaderboard/:gameId', async (req, res) => {
 const DIST_PATH = path.join(ROOT_DIR, 'dist');
 app.use(express.static(DIST_PATH));
 
-// SPA catch-all fix for Express 5: '/*' -> '(.*)'
-app.get('(.*)', (req, res) => {
+/**
+ * SPA Catch-all Route for Express 5
+ * Express 5 requires a named parameter for wildcards.
+ * Using ':path*' covers all sub-routes for React Router to handle.
+ */
+app.get('/:path*', (req, res) => {
   if (req.path.startsWith('/api')) return res.status(404).send('Not Found');
   res.sendFile(path.join(DIST_PATH, 'index.html'));
 });
 
 // --- Server Start ---
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
 
 export default app;
