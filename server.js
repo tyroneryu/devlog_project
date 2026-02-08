@@ -136,10 +136,12 @@ const globalLimiter = rateLimit({
 app.use(globalLimiter);
 app.use(express.json({ limit: '10kb' }));
 
-const POSTS_DIR = path.join(__dirname, 'posts');
-const DATA_DIR = path.join(__dirname, 'data');
+// --- 배포 환경 호환 경로 설정 (process.cwd()는 프로젝트 루트를 가리킵니다) ---
+const ROOT_DIR = process.cwd();
+const POSTS_DIR = path.join(ROOT_DIR, 'posts');
+const DATA_DIR = path.join(ROOT_DIR, 'data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
-const GUESTBOOK_FILE = path.join(__dirname, 'guestbook.json');
+const GUESTBOOK_FILE = path.join(ROOT_DIR, 'guestbook.json');
 
 // --- File System Helpers ---
 
@@ -152,7 +154,6 @@ const initData = async () => {
       await fs.writeFile(DB_FILE, JSON.stringify({ leaderboard: [] }, null, 2));
     }
     
-    // 방명록 파일이 없으면 초기화
     try { await fs.access(GUESTBOOK_FILE); } catch {
       await fs.writeFile(GUESTBOOK_FILE, JSON.stringify([], null, 2));
     }
@@ -172,12 +173,15 @@ const saveDB = async (data) => {
   await fs.writeFile(DB_FILE, JSON.stringify(data, null, 2));
 };
 
-// 방명록 전용 헬퍼
+// 방명록 전용 헬퍼 (로그 보강)
 const getGuestbook = async () => {
   try {
     const data = await fs.readFile(GUESTBOOK_FILE, 'utf-8');
     return JSON.parse(data);
-  } catch { return []; }
+  } catch (err) {
+    console.error(`❌ Guestbook Read Error at ${GUESTBOOK_FILE}:`, err.message);
+    return [];
+  }
 };
 
 const saveGuestbook = async (data) => {
@@ -272,11 +276,10 @@ app.get('/api/posts/:id', async (req, res) => {
   } catch (error) { res.status(500).json({ error: 'Internal Error' }); }
 });
 
-// 방명록 불러오기 (guestbook.json 사용)
+// 방명록 불러오기
 app.get('/api/guestbook', async (req, res) => {
   try {
     const messages = await getGuestbook();
-    // 최신순 정렬
     const sorted = messages.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     res.json(sorted);
   } catch (error) {
@@ -284,7 +287,7 @@ app.get('/api/guestbook', async (req, res) => {
   }
 });
 
-// 방명록 작성하기 (guestbook.json 사용)
+// 방명록 작성하기
 app.post('/api/guestbook', async (req, res) => {
   try {
     const { name, message, _honey } = req.body;
@@ -342,7 +345,12 @@ if (process.env.NODE_ENV === 'production') {
   app.get('*', (req, res) => { res.sendFile(path.join(__dirname, 'dist', 'index.html')); });
 }
 
-server.listen(PORT, () => {
-  console.log(`🚀 Secure Server running on http://localhost:${PORT}`);
-  console.log(`📂 Reading Guestbook from: ${GUESTBOOK_FILE}`);
-});
+// Vercel 환경에서는 app을 내보내야 합니다.
+if (process.env.NODE_ENV !== 'production') {
+  server.listen(PORT, () => {
+    console.log(`🚀 Local Server running on http://localhost:${PORT}`);
+    console.log(`📂 Reading Guestbook from: ${GUESTBOOK_FILE}`);
+  });
+}
+
+export default app;
