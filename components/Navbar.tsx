@@ -94,7 +94,7 @@ const Navbar: React.FC = () => {
 
             <div className="flex items-center gap-4">
               <a
-                  href="https://github.com"
+                  href="https://github.com/tyroneryu"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-neutral-400 hover:text-white transition-colors p-2"
@@ -175,10 +175,10 @@ const Navbar: React.FC = () => {
                     </Link>
                 )}
                 <a
-                    href="mailto:hello@example.com"
+                    href="mailto:ryu.tyrone@gmail.com"
                     className="text-xl text-neutral-400 hover:text-white pt-8"
                 >
-                  Let's Talk ->
+                  Let's Talk &rarr;
                 </a>
               </div>
             </div>
