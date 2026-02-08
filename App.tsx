@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
@@ -41,7 +42,6 @@ const NotFound = () => (
 );
 
 const App: React.FC = () => {
-  // Fix: Ensure state is defined inside the component
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -72,6 +72,7 @@ const App: React.FC = () => {
                 {/* Lab routes */}
                 <Route path="/ailab" element={<AiLab />} />
                 <Route path="/arcade" element={<Arcade />} />
+                <Route path="/assets" element={<AdminAssets />} />
 
                 {/* Specific routes first */}
                 <Route path="/admin/write" element={<AdminWrite />} />

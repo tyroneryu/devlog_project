@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Github, ArrowUpRight, PenTool, LogOut, Sparkles, Gamepad2 } from 'lucide-react';
+import { Menu, X, Github, ArrowUpRight, PenTool, LogOut, Sparkles, Gamepad2, Wand2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar: React.FC = () => {
@@ -54,6 +55,16 @@ const Navbar: React.FC = () => {
                   </Link>
               ))}
 
+              {/* Asset Factory Link */}
+              <Link
+                  to="/assets"
+                  className={`text-sm font-medium tracking-wide flex items-center gap-1.5 transition-colors duration-300 ${
+                      location.pathname === '/assets' ? 'text-purple-400' : 'text-purple-400/70 hover:text-purple-400'
+                  }`}
+              >
+                <Wand2 size={12} /> Factory
+              </Link>
+
               {/* Arcade Link */}
               <Link
                   to="/arcade"
@@ -68,7 +79,7 @@ const Navbar: React.FC = () => {
               <Link
                   to="/ailab"
                   className={`text-sm font-medium tracking-wide flex items-center gap-1.5 transition-colors duration-300 ${
-                      location.pathname === '/ailab' ? 'text-purple-400' : 'text-purple-400/70 hover:text-purple-400'
+                      location.pathname === '/ailab' ? 'text-cyan-400' : 'text-cyan-400/70 hover:text-cyan-400'
                   }`}
               >
                 <Sparkles size={12} /> AI Lab
@@ -83,7 +94,7 @@ const Navbar: React.FC = () => {
 
             <div className="flex items-center gap-4">
               <a
-                  href="https://github.com/tyroneryu"
+                  href="https://github.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-neutral-400 hover:text-white transition-colors p-2"
@@ -100,7 +111,7 @@ const Navbar: React.FC = () => {
                   </button>
               ) : (
                   <a
-                      href="mailto:ryu.tyrone@gmail.com"
+                      href="mailto:hello@example.com"
                       className="group flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black text-sm font-bold hover:bg-neutral-200 transition-all duration-300"
                   >
                     Let's Talk
@@ -134,6 +145,13 @@ const Navbar: React.FC = () => {
                     </Link>
                 ))}
                 <Link
+                    to="/assets"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-3xl font-bold text-purple-400 hover:text-purple-300 flex items-center justify-center gap-2"
+                >
+                  <Wand2 /> Factory
+                </Link>
+                <Link
                     to="/arcade"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="text-3xl font-bold text-red-400 hover:text-red-300 flex items-center justify-center gap-2"
@@ -143,7 +161,7 @@ const Navbar: React.FC = () => {
                 <Link
                     to="/ailab"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-3xl font-bold text-purple-400 hover:text-purple-300 flex items-center justify-center gap-2"
+                    className="text-3xl font-bold text-cyan-400 hover:text-cyan-300 flex items-center justify-center gap-2"
                 >
                   <Sparkles /> AI Lab
                 </Link>
@@ -160,7 +178,7 @@ const Navbar: React.FC = () => {
                     href="mailto:hello@example.com"
                     className="text-xl text-neutral-400 hover:text-white pt-8"
                 >
-                  Let's Talk -
+                  Let's Talk ->
                 </a>
               </div>
             </div>

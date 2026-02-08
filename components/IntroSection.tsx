@@ -66,7 +66,7 @@ const IntroSection: React.FC = () => {
 
             <div className="space-y-6 text-lg text-neutral-400 leading-relaxed font-light max-w-2xl">
               <p>
-                I am a unique hybrid professional: a <strong>Software Engineer</strong> who builds scalable systems, and a <strong>MICE Planner</strong> who orchestrates large-scale international events.
+                I am a unique hybrid professional: a <strong>Software Engineer</strong> who builds scalable systems, and a <strong>MICE Specialist</strong> who orchestrates large-scale international events.
               </p>
               <p>
                 Whether it's optimizing a React render cycle or managing the logistics of a global summit, my philosophy remains the same: meticulous planning, seamless execution, and an obsession with the user experience.
