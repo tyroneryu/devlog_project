@@ -181,12 +181,17 @@ const DIST_PATH = path.join(ROOT_DIR, 'dist');
 app.use(express.static(DIST_PATH));
 
 /**
- * SPA Catch-all Route for Express 5
- * Express 5 requires a named parameter for wildcards.
- * Using ':path*' covers all sub-routes for React Router to handle.
+ * Express 5 Catch-all (The Middleware Approach)
+ * '/*', '(.*)', '/:path*'와 같은 문자열 패턴은 Express 5에서 파싱 에러(PathError)를 유발하기 쉽습니다.
+ * 가장 안전한 방법은 경로를 지정하지 않은 미들웨어(app.use)를 마지막에 배치하는 것입니다.
  */
-app.get('/:path*', (req, res) => {
-  if (req.path.startsWith('/api')) return res.status(404).send('Not Found');
+app.use((req, res, next) => {
+  // API 요청인데 여기까지 왔다면 404 에러를 반환합니다.
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  
+  // 그 외의 모든 요청은 SPA 지원을 위해 index.html을 서빙합니다.
   res.sendFile(path.join(DIST_PATH, 'index.html'));
 });
 
