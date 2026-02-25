@@ -90,7 +90,7 @@ const IntroSection: React.FC = () => {
 
             <div className="pt-4">
               <a
-                  href="/resume.pdf"
+                  href="/.pdf"
                   download="Taeyun_Ryu_Resume.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
