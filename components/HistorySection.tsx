@@ -162,7 +162,7 @@ const HistorySection: React.FC = () => {
         },
         {
             id: 'e3',
-            title: 'HI-ARC (HongIk-Algorithm Research Club',
+            title: 'HI-ARC (HongIk-Algorithm Research Club)',
             role: 'Dyanmic Programming Instructor',
             period: '2024.03 - 2025.08',
             type: 'activity'
