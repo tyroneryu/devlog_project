@@ -36,26 +36,26 @@ const Navbar: React.FC = () => {
     >
       <div className="max-w-7xl mx-auto px-6 md:px-8 flex items-center justify-between">
         {/* Left Group: Logo + Left-aligned Navigation Links */}
-        <div className="flex items-center gap-8 lg:gap-10">
+        <div className="flex items-center gap-8 lg:gap-12">
           {/* Logo */}
           <Link to="/" className="flex items-center group transition-opacity hover:opacity-90">
-            <span className="text-[15px] md:text-base font-bold tracking-tight text-white">
-              TAEYUN RYU'S <span className="text-neutral-400 font-medium ml-0.5">TECH BLOG</span>
+            <span className="text-lg md:text-xl font-bold tracking-tight text-white">
+              TAEYUN RYU'S <span className="text-neutral-400 font-medium ml-1">TECH BLOG</span>
             </span>
           </Link>
 
-          {/* Desktop Nav - Left aligned (Google I/O style) */}
-          <div className="hidden md:flex items-center gap-7 lg:gap-8">
+          {/* Desktop Nav - Left aligned with larger, clearer font */}
+          <div className="hidden md:flex items-center gap-7 lg:gap-9">
             {navLinks.map((link) => {
               const isActive = location.pathname === link.path;
               return (
                 <Link
                   key={link.name}
                   to={link.path}
-                  className={`text-[13.5px] lg:text-sm transition-colors duration-200 tracking-normal ${
+                  className={`text-base md:text-lg transition-colors duration-200 tracking-tight ${
                     isActive
-                      ? 'text-white font-medium'
-                      : 'text-neutral-300/80 hover:text-white font-normal'
+                      ? 'text-white font-semibold'
+                      : 'text-neutral-300 hover:text-white font-medium'
                   }`}
                 >
                   {link.name}
@@ -66,16 +66,16 @@ const Navbar: React.FC = () => {
             {isAuthenticated && (
               <Link
                 to="/admin/write"
-                className="text-[13.5px] lg:text-sm font-medium text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 transition-colors"
+                className="text-base md:text-lg font-medium text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 transition-colors"
               >
-                <PenTool size={13} /> Write
+                <PenTool size={16} /> Write
               </Link>
             )}
           </div>
         </div>
 
         {/* Right Area: Minimal Icons & Links (No bulky pill panels) */}
-        <div className="hidden md:flex items-center gap-5">
+        <div className="hidden md:flex items-center gap-6">
           <a
             href="https://github.com/tyroneryu"
             target="_blank"
@@ -83,23 +83,23 @@ const Navbar: React.FC = () => {
             className="text-neutral-400 hover:text-white transition-colors p-1"
             aria-label="GitHub"
           >
-            <Github size={18} />
+            <Github size={22} />
           </a>
 
           {isAuthenticated ? (
             <button
               onClick={logout}
-              className="text-[13px] font-medium text-neutral-400 hover:text-red-400 transition-colors flex items-center gap-1.5 py-1"
+              className="text-sm md:text-base font-medium text-neutral-400 hover:text-red-400 transition-colors flex items-center gap-1.5 py-1"
             >
-              <LogOut size={14} /> Logout
+              <LogOut size={16} /> Logout
             </button>
           ) : (
             <a
               href="mailto:ryu.tyrone@gmail.com"
-              className="text-[13px] font-medium text-neutral-300 hover:text-white transition-colors flex items-center gap-1 py-1"
+              className="text-sm md:text-base font-medium text-neutral-300 hover:text-white transition-colors flex items-center gap-1 py-1"
             >
               Contact
-              <ArrowUpRight size={13} className="opacity-70" />
+              <ArrowUpRight size={16} className="opacity-70" />
             </a>
           )}
         </div>
