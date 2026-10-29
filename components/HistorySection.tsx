@@ -57,9 +57,9 @@ const Card: React.FC<CardProps> = ({ item, align, onHover }) => {
         `} />
 
                 <div className={`flex flex-col gap-1 ${align === 'left' ? 'md:items-end' : 'md:items-start'} relative z-10`}>
-          <span className="inline-flex items-center gap-1.5 text-xs font-mono text-neutral-500 bg-black/30 px-2 py-1 rounded border border-white/5 mb-2">
-            <Calendar size={10} /> {item.period}
-          </span>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-mono text-neutral-500 bg-black/30 px-2 py-1 rounded border border-white/5 mb-2">
+                        <Calendar size={10} /> {item.period}
+                    </span>
                     <h4 className={`text-xl font-bold text-white transition-colors duration-300 ${hoverTitleColor}`}>
                         {item.title}
                     </h4>
@@ -88,56 +88,59 @@ const HistorySection: React.FC = () => {
     const isCareerFocused = focusedCategory === 'career';
 
     // Left Title (Studies) - Matches Activity/Blue
-    const leftTitleClass = `flex-1 text-right transition-colors duration-500 ease-in-out ${
-        isActivityFocused
-            ? 'text-blue-400'
-            : isCareerFocused
-                ? 'text-neutral-800 blur-[1px]' // Dimmed when Career is focused
-                : 'text-white' // Default White
-    }`;
+    const leftTitleClass = `flex-1 text-right transition-colors duration-500 ease-in-out ${isActivityFocused
+        ? 'text-blue-400'
+        : isCareerFocused
+            ? 'text-neutral-800 blur-[1px]' // Dimmed when Career is focused
+            : 'text-white' // Default White
+        }`;
 
     // Right Title (Careers) - Matches Career/Red
-    const rightTitleClass = `flex-1 text-left transition-colors duration-500 ease-in-out ${
-        isCareerFocused
-            ? 'text-red-400'
-            : isActivityFocused
-                ? 'text-neutral-800 blur-[1px]' // Dimmed when Activity is focused
-                : 'text-neutral-400' // Default Light Gray
-    }`;
+    const rightTitleClass = `flex-1 text-left transition-colors duration-500 ease-in-out ${isCareerFocused
+        ? 'text-red-400'
+        : isActivityFocused
+            ? 'text-neutral-800 blur-[1px]' // Dimmed when Activity is focused
+            : 'text-neutral-400' // Default Light Gray
+        }`;
 
-    const activityHeaderClass = `flex items-center gap-3 transition-colors duration-300 ${
-        isActivityFocused ? 'text-blue-400' : 'text-white'
-    }`;
+    const activityHeaderClass = `flex items-center gap-3 transition-colors duration-300 ${isActivityFocused ? 'text-blue-400' : 'text-white'
+        }`;
 
-    const careerHeaderClass = `flex items-center gap-3 transition-colors duration-300 ${
-        isCareerFocused ? 'text-red-400' : 'text-white'
-    }`;
+    const careerHeaderClass = `flex items-center gap-3 transition-colors duration-300 ${isCareerFocused ? 'text-red-400' : 'text-white'
+        }`;
 
     // Data with explicit 'type' added
     const careers: HistoryItem[] = [
         {
             id: 'c1',
+            title: 'INTERCOM Convention Sevice, Inc.',
+            role: 'PCO Coordinator',
+            period: '2026.03 -',
+            type: 'career'
+        },
+        {
+            id: 'c2',
             title: 'OSCO MICE Contest',
             role: 'Chungbuk-Governer Prize (1st Prize)',
             period: '2024.12.23',
             type: 'career'
         },
         {
-            id: 'c2',
+            id: 'c3',
             title: 'Gyeonggi Tourism Organization',
             role: 'ITB Asia Singapore 2024 Dispatched Intern',
             period: '2024.10.18 - 2024.10.27',
             type: 'career'
         },
         {
-            id: 'c3',
+            id: 'c4',
             title: 'PremiumPass International',
             role: 'MICE Business Intern',
             period: '2024.07.15 - 2024.08.30',
             type: 'career'
         },
         {
-            id: 'c4',
+            id: 'c5',
             title: 'Wrtn Prompthon',
             role: "2nd Prize",
             period: '2023.11.09 - 11.11',
@@ -149,8 +152,8 @@ const HistorySection: React.FC = () => {
         {
             id: 'e1',
             title: 'Hongik University',
-            role: 'Business Management & Computer Engineering',
-            period: '2019.03 - 2026.02',
+            role: 'Computer Engineering & Business Administration',
+            period: '2019.03 - 2026.08',
             type: 'activity'
         },
         {
@@ -162,7 +165,7 @@ const HistorySection: React.FC = () => {
         },
         {
             id: 'e3',
-            title: 'HI-ARC (HongIk-Algorithm Research Club)',
+            title: 'HI-ARC (Hongik-Algorithm Research Club)',
             role: 'Dyanmic Programming Instructor',
             period: '2024.03 - 2025.08',
             type: 'activity'
@@ -172,6 +175,13 @@ const HistorySection: React.FC = () => {
             title: 'Gyeonggi MICE Academy',
             role: 'Graduate Student',
             period: '2024.06.15 - 2024.07.05',
+            type: 'activity'
+        },
+        {
+            id: 'e5',
+            title: 'Francis W. Parker School',
+            role: 'Sophomore / Junior',
+            period: '2014.08 - 2017.02',
             type: 'activity'
         },
     ];
@@ -196,15 +206,15 @@ const HistorySection: React.FC = () => {
                     transition={{ delay: 0.1 }}
                     className="w-full flex items-center justify-center text-4xl md:text-6xl font-bold tracking-tighter"
                 >
-          <span className={leftTitleClass}>
-            Studies
-          </span>
+                    <span className={leftTitleClass}>
+                        Studies
+                    </span>
 
                     <span className="text-neutral-600 px-3 md:px-6 shrink-0 font-light">&</span>
 
                     <span className={rightTitleClass}>
-            Careers
-          </span>
+                        Careers
+                    </span>
                 </motion.h2>
             </div>
 

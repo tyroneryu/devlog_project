@@ -19,7 +19,6 @@ const Navbar: React.FC = () => {
   }, []);
 
   const navLinks = [
-    { name: 'Home', path: '/' },
     { name: 'Blog', path: '/blog' },
     { name: 'Project', path: '/project' },
   ];
@@ -32,7 +31,7 @@ const Navbar: React.FC = () => {
                   : 'bg-transparent border-transparent py-6'
           }`}
       >
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between relative">
           {/* Logo */}
           <Link to="/" className="z-50 block hover:opacity-80 transition-opacity">
           <span className="text-xl font-bold tracking-tighter text-white">
@@ -40,14 +39,13 @@ const Navbar: React.FC = () => {
           </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center space-x-1">
-            <div className="flex items-center space-x-6 mr-8 bg-white/5 px-6 py-2 rounded-full border border-white/5 backdrop-blur-md">
+          {/* Desktop Nav - Centered */}
+          <div className="hidden md:flex items-center space-x-6 absolute left-1/2 -translate-x-1/2">
               {navLinks.map((link) => (
                   <Link
                       key={link.name}
                       to={link.path}
-                      className={`text-sm font-medium tracking-wide transition-colors duration-300 ${
+                      className={`text-base font-bold antialiased tracking-tighter transition-colors duration-300 ${
                           location.pathname === link.path ? 'text-white' : 'text-neutral-400 hover:text-white'
                       }`}
                   >
@@ -58,7 +56,7 @@ const Navbar: React.FC = () => {
               {/* Asset Factory Link */}
               <Link
                   to="/assets"
-                  className={`text-sm font-medium tracking-wide flex items-center gap-1.5 transition-colors duration-300 ${
+                  className={`text-base font-bold antialiased tracking-tighter flex items-center gap-1.5 transition-colors duration-300 ${
                       location.pathname === '/assets' ? 'text-purple-400' : 'text-purple-400/70 hover:text-purple-400'
                   }`}
               >
@@ -68,7 +66,7 @@ const Navbar: React.FC = () => {
               {/* Arcade Link */}
               <Link
                   to="/arcade"
-                  className={`text-sm font-medium tracking-wide flex items-center gap-1.5 transition-colors duration-300 ${
+                  className={`text-base font-bold antialiased tracking-tighter flex items-center gap-1.5 transition-colors duration-300 ${
                       location.pathname === '/arcade' ? 'text-red-400' : 'text-red-400/70 hover:text-red-400'
                   }`}
               >
@@ -78,7 +76,7 @@ const Navbar: React.FC = () => {
               {/* AI Lab Link */}
               <Link
                   to="/ailab"
-                  className={`text-sm font-medium tracking-wide flex items-center gap-1.5 transition-colors duration-300 ${
+                  className={`text-base font-bold antialiased tracking-tighter flex items-center gap-1.5 transition-colors duration-300 ${
                       location.pathname === '/ailab' ? 'text-cyan-400' : 'text-cyan-400/70 hover:text-cyan-400'
                   }`}
               >
@@ -86,13 +84,14 @@ const Navbar: React.FC = () => {
               </Link>
 
               {isAuthenticated && (
-                  <Link to="/admin/write" className="text-sm font-medium tracking-wide text-green-400 hover:text-green-300 flex items-center gap-2">
+                  <Link to="/admin/write" className="text-base font-bold antialiased tracking-tighter text-green-400 hover:text-green-300 flex items-center gap-2">
                     <PenTool size={14} /> Write
                   </Link>
               )}
-            </div>
+          </div>
 
-            <div className="flex items-center gap-4">
+          {/* Right Buttons */}
+          <div className="hidden md:flex items-center gap-4">
               <a
                   href="https://github.com/tyroneryu"
                   target="_blank"
@@ -118,7 +117,6 @@ const Navbar: React.FC = () => {
                     <ArrowUpRight size={16} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </a>
               )}
-            </div>
           </div>
 
           {/* Mobile Toggle */}
