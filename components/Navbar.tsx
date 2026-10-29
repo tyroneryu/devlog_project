@@ -39,23 +39,23 @@ const Navbar: React.FC = () => {
         <div className="flex items-center gap-8 lg:gap-12">
           {/* Logo */}
           <Link to="/" className="flex items-center group transition-opacity hover:opacity-90">
-            <span className="text-lg md:text-xl font-medium tracking-tight text-white">
-              TAEYUN RYU'S <span className="text-neutral-400 font-light ml-1">TECH BLOG</span>
+            <span className="text-base md:text-[17px] font-bold tracking-tight text-white">
+              TAEYUN RYU'S <span className="text-neutral-400 font-normal ml-1">TECH BLOG</span>
             </span>
           </Link>
 
-          {/* Desktop Nav - Left aligned with sleek, lighter typography */}
-          <div className="hidden md:flex items-center gap-7 lg:gap-9">
+          {/* Desktop Nav - Google I/O style crisp typography */}
+          <div className="hidden md:flex items-center gap-8 lg:gap-10">
             {navLinks.map((link) => {
               const isActive = location.pathname === link.path;
               return (
                 <Link
                   key={link.name}
                   to={link.path}
-                  className={`text-base md:text-lg transition-colors duration-200 tracking-tight ${
+                  className={`text-[14.5px] transition-colors duration-200 tracking-normal font-medium ${
                     isActive
-                      ? 'text-white font-medium'
-                      : 'text-neutral-300/85 hover:text-white font-light'
+                      ? 'text-white'
+                      : 'text-white/75 hover:text-white'
                   }`}
                 >
                   {link.name}
@@ -66,9 +66,9 @@ const Navbar: React.FC = () => {
             {isAuthenticated && (
               <Link
                 to="/admin/write"
-                className="text-base md:text-lg font-light text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 transition-colors"
+                className="text-[14.5px] font-medium text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 transition-colors"
               >
-                <PenTool size={16} /> Write
+                <PenTool size={15} /> Write
               </Link>
             )}
           </div>
@@ -83,23 +83,23 @@ const Navbar: React.FC = () => {
             className="text-neutral-400 hover:text-white transition-colors p-1"
             aria-label="GitHub"
           >
-            <Github size={22} />
+            <Github size={20} />
           </a>
 
           {isAuthenticated ? (
             <button
               onClick={logout}
-              className="text-sm md:text-base font-light text-neutral-400 hover:text-red-400 transition-colors flex items-center gap-1.5 py-1"
+              className="text-[14px] font-medium text-neutral-400 hover:text-red-400 transition-colors flex items-center gap-1.5 py-1"
             >
-              <LogOut size={16} /> Logout
+              <LogOut size={15} /> Logout
             </button>
           ) : (
             <a
               href="mailto:ryu.tyrone@gmail.com"
-              className="text-sm md:text-base font-light text-neutral-300 hover:text-white transition-colors flex items-center gap-1 py-1"
+              className="text-[14px] font-medium text-white/80 hover:text-white transition-colors flex items-center gap-1 py-1"
             >
               Contact
-              <ArrowUpRight size={16} className="opacity-70" />
+              <ArrowUpRight size={15} className="opacity-70" />
             </a>
           )}
         </div>
