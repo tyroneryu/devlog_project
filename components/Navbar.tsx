@@ -30,8 +30,8 @@ const Navbar: React.FC = () => {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
         isScrolled
-          ? 'bg-black/85 backdrop-blur-md border-b border-white/[0.08] py-3.5'
-          : 'bg-transparent py-5'
+          ? 'bg-black/85 backdrop-blur-md border-b border-white/[0.08] py-4 md:py-5'
+          : 'bg-transparent py-7 md:py-9'
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-8 flex items-center justify-between">
@@ -39,12 +39,12 @@ const Navbar: React.FC = () => {
         <div className="flex items-center gap-8 lg:gap-12">
           {/* Logo */}
           <Link to="/" className="flex items-center group transition-opacity hover:opacity-90">
-            <span className="text-lg md:text-xl font-bold tracking-tight text-white">
-              TAEYUN RYU'S <span className="text-neutral-400 font-medium ml-1">TECH BLOG</span>
+            <span className="text-lg md:text-xl font-medium tracking-tight text-white">
+              TAEYUN RYU'S <span className="text-neutral-400 font-light ml-1">TECH BLOG</span>
             </span>
           </Link>
 
-          {/* Desktop Nav - Left aligned with larger, clearer font */}
+          {/* Desktop Nav - Left aligned with sleek, lighter typography */}
           <div className="hidden md:flex items-center gap-7 lg:gap-9">
             {navLinks.map((link) => {
               const isActive = location.pathname === link.path;
@@ -54,8 +54,8 @@ const Navbar: React.FC = () => {
                   to={link.path}
                   className={`text-base md:text-lg transition-colors duration-200 tracking-tight ${
                     isActive
-                      ? 'text-white font-semibold'
-                      : 'text-neutral-300 hover:text-white font-medium'
+                      ? 'text-white font-medium'
+                      : 'text-neutral-300/85 hover:text-white font-light'
                   }`}
                 >
                   {link.name}
@@ -66,7 +66,7 @@ const Navbar: React.FC = () => {
             {isAuthenticated && (
               <Link
                 to="/admin/write"
-                className="text-base md:text-lg font-medium text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 transition-colors"
+                className="text-base md:text-lg font-light text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 transition-colors"
               >
                 <PenTool size={16} /> Write
               </Link>
@@ -89,14 +89,14 @@ const Navbar: React.FC = () => {
           {isAuthenticated ? (
             <button
               onClick={logout}
-              className="text-sm md:text-base font-medium text-neutral-400 hover:text-red-400 transition-colors flex items-center gap-1.5 py-1"
+              className="text-sm md:text-base font-light text-neutral-400 hover:text-red-400 transition-colors flex items-center gap-1.5 py-1"
             >
               <LogOut size={16} /> Logout
             </button>
           ) : (
             <a
               href="mailto:ryu.tyrone@gmail.com"
-              className="text-sm md:text-base font-medium text-neutral-300 hover:text-white transition-colors flex items-center gap-1 py-1"
+              className="text-sm md:text-base font-light text-neutral-300 hover:text-white transition-colors flex items-center gap-1 py-1"
             >
               Contact
               <ArrowUpRight size={16} className="opacity-70" />
